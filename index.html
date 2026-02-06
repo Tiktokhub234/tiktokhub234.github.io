@@ -3281,6 +3281,54 @@ function listenServiceUnread(){
     });
 
 }
+async function sendServiceMsg(){
+
+  const text = document.getElementById("msgInput").value.trim();
+  const file = document.getElementById("imgInput").files[0];
+
+  if(!text && !file){
+    alert("Type message or select image");
+    return;
+  }
+
+  if(!currentTicketId){
+    alert("Ticket not ready");
+    return;
+  }
+
+  let imageUrl = "";
+
+  if(file){
+    const imgRef = firebase.storage()
+      .ref("supportImages/" + currentTicketId + "/" + Date.now() + "_" + file.name);
+
+    await imgRef.put(file);
+    imageUrl = await imgRef.getDownloadURL();
+  }
+
+  await db
+    .collection("supportTickets")
+    .doc(currentTicketId)
+    .collection("messages")
+    .add({
+      sender: "user",
+      text: text || "",
+      image: imageUrl || "",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+  await db
+    .collection("supportTickets")
+    .doc(currentTicketId)
+    .update({
+      lastSender: "user",
+      lastMessage: imageUrl ? "📷 Image" : text,
+      lastTime: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+  document.getElementById("msgInput").value = "";
+  document.getElementById("imgInput").value = "";
+}
 
 </script>
 <!-- ✅ SERVICE BOX -->
@@ -3322,31 +3370,62 @@ function listenServiceUnread(){
       margin-bottom:8px">
     </div>
 
-    <!-- ✍️ Input -->
-    <input id="msgInput" placeholder="Type message..."
-      style="padding:8px;border:1px solid #ddd;border-radius:6px">
+    <!-- 💬 CHAT INPUT + BUTTONS -->
+<div style="display:flex;gap:6px;align-items:center;margin-top:8px">
 
-    <button onclick="sendMsg()" style="
-      margin-top:6px;
+  <!-- 📷 Image Icon -->
+  <label for="imgInput" style="
+    width:36px;height:36px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:1px solid #ddd;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:18px">
+    📷
+  </label>
+
+  <input type="file" id="imgInput" accept="image/*" hidden>
+
+  <!-- ✍️ Text -->
+  <input
+    type="text"
+    id="msgInput"
+    placeholder="Type message..."
+    style="
+      flex:1;
       padding:8px;
+      border:1px solid #ddd;
+      border-radius:6px">
+
+  <!-- 🚀 Send -->
+  <button
+    onclick="sendServiceMsg()"
+    style="
       background:#111;
       color:#fff;
       border:none;
-      border-radius:6px">
-      Send
-    </button>
+      padding:8px 12px;
+      border-radius:6px;
+      cursor:pointer">
+    Send
+  </button>
 
-    <button onclick="closeService()" style="
-      margin-top:6px;
-      padding:6px;
+  <!-- ❌ Close -->
+  <button
+    onclick="closeService()"
+    style="
       background:#eee;
       border:none;
-      border-radius:6px">
-      Close
-    </button>
+      padding:8px 10px;
+      border-radius:6px;
+      cursor:pointer">
+    Close
+  </button>
 
-  </div>
 </div>
+
 <!-- 🔔 NOTIFICATION MODAL (YAHAN PASTE KARO) -->
 <div id="notificationBox" style="
 display:none;
@@ -3389,4 +3468,5 @@ z-index:10001;
 </body>
 
 </html>
+
 
