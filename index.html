@@ -3370,36 +3370,51 @@ async function sendServiceMsg(){
       margin-bottom:8px">
     </div>
 
-    <!-- 💬 CHAT INPUT + BUTTONS -->
-<div style="display:flex;gap:6px;align-items:center;margin-top:8px">
+  <!-- 💬 CHAT INPUT + BUTTONS -->
+<div style="
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-top:8px;
+  width:100%;
+  box-sizing:border-box;
+">
 
   <!-- 📷 Image Icon -->
   <label for="imgInput" style="
-    width:36px;height:36px;
+    width:36px;
+    height:36px;
+    min-width:36px;
     display:flex;
     align-items:center;
     justify-content:center;
     border:1px solid #ddd;
     border-radius:6px;
     cursor:pointer;
-    font-size:18px">
+    font-size:18px;
+    background:#fff;
+  ">
     📷
   </label>
 
+  <!-- Hidden Image Input -->
   <input type="file" id="imgInput" accept="image/*" hidden>
 
-  <!-- ✍️ Text -->
+  <!-- ✍️ Text Input -->
   <input
     type="text"
     id="msgInput"
     placeholder="Type message..."
     style="
       flex:1;
+      min-width:0;
       padding:8px;
       border:1px solid #ddd;
-      border-radius:6px">
+      border-radius:6px;
+      box-sizing:border-box;
+    ">
 
-  <!-- 🚀 Send -->
+  <!-- 🚀 Send Button -->
   <button
     onclick="sendServiceMsg()"
     style="
@@ -3408,11 +3423,13 @@ async function sendServiceMsg(){
       border:none;
       padding:8px 12px;
       border-radius:6px;
-      cursor:pointer">
+      cursor:pointer;
+      white-space:nowrap;
+    ">
     Send
   </button>
 
-  <!-- ❌ Close -->
+  <!-- ❌ Close Button -->
   <button
     onclick="closeService()"
     style="
@@ -3420,11 +3437,14 @@ async function sendServiceMsg(){
       border:none;
       padding:8px 10px;
       border-radius:6px;
-      cursor:pointer">
+      cursor:pointer;
+      white-space:nowrap;
+    ">
     Close
   </button>
 
 </div>
+
 
 <!-- 🔔 NOTIFICATION MODAL (YAHAN PASTE KARO) -->
 <div id="notificationBox" style="
@@ -3468,5 +3488,6 @@ z-index:10001;
 </body>
 
 </html>
+
 
 
