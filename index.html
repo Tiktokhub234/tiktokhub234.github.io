@@ -813,21 +813,26 @@ onchange="preview(this,'idBackPrev')">
 
   <small id="headerLang">🌍 EN</small>
 
-  <div id="notifyBtn" onclick="openNotifications(event)"
- style="position:relative;cursor:pointer">
-    <i class="fa-solid fa-bell" style="font-size:18px;color:#333"></i>
-    <span id="notifyCount" style="
-      display:none;
-      position:absolute;
-      top:-5px;
-      right:-5px;
-      background:red;
-      color:#fff;
-      font-size:10px;
-      padding:2px 5px;
-      border-radius:50%;
-    ">0</span>
-  </div>
+ <div
+  id="notifyBtn"
+  onclick="openNotifications(event)"
+  style="position:relative;cursor:pointer"
+>
+  <i class="fa-solid fa-bell" style="font-size:18px;color:#333"></i>
+
+  <span id="notifyCount" style="
+    display:none;
+    position:absolute;
+    top:-5px;
+    right:-5px;
+    background:red;
+    color:#fff;
+    font-size:10px;
+    padding:2px 5px;
+    border-radius:50%;
+  ">0</span>
+</div>
+
 
 </div>
   
@@ -1364,6 +1369,7 @@ z-index:999;
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
 
 <!-- ================= ALL APP + FIREBASE JS ================= -->
 <script>
@@ -2552,44 +2558,66 @@ function listenChat(){
         // ===== ADMIN MESSAGE (LEFT + LOGO) =====
         if(m.sender === "admin"){
 
-          chatArea.innerHTML += `
-            <div style="display:flex;align-items:flex-end;margin:8px 0">
+          let html = "";
 
-              <div class="tiktok-logo"></div>
+if(m.text){
+  html += `<div>${m.text}</div>`;
+}
 
-              <div style="
-                background:#f1f1f1;
-                padding:8px 12px;
-                border-radius:14px;
-                max-width:70%;
-                font-size:13px;">
-                ${m.text}
-              </div>
+if(m.image){
+  html += `
+    <img src="${m.image}"
+      style="max-width:180px;border-radius:8px;margin-top:4px">
+  `;
+}
 
-            </div>
-          `;
+chatArea.innerHTML += `
+  <div style="display:flex;align-items:flex-end;margin:8px 0">
+    <div class="tiktok-logo"></div>
+    <div style="
+      background:#f1f1f1;
+      padding:8px 12px;
+      border-radius:14px;
+      max-width:70%;
+      font-size:13px;">
+      ${html}
+    </div>
+  </div>
+`;
 
         }
 
         // ===== USER MESSAGE (RIGHT) =====
         else{
 
-          chatArea.innerHTML += `
-            <div style="text-align:right;margin:8px 0">
-              <div style="
-                display:inline-block;
-                background:#ff0050;
-                color:#fff;
-                padding:8px 12px;
-                border-radius:14px;
-                max-width:70%;
-                font-size:13px;">
-                ${m.text}
-              </div>
-            </div>
-          `;
+  let html = "";
 
-        }
+  if(m.text){
+    html += `<div>${m.text}</div>`;
+  }
+
+  if(m.image){
+    html += `
+      <img src="${m.image}"
+        style="max-width:180px;border-radius:8px;margin-top:4px">
+    `;
+  }
+
+  chatArea.innerHTML += `
+    <div style="text-align:right;margin:8px 0">
+      <div style="
+        display:inline-block;
+        background:#ff0050;
+        color:#fff;
+        padding:8px 12px;
+        border-radius:14px;
+        max-width:70%;
+        font-size:13px;">
+        ${html}
+      </div>
+    </div>
+  `;
+}
 
       });
 
@@ -2813,20 +2841,12 @@ function submitWithdraw(){
 .catch(err=>alert(err.message));
 }
 function openNotifications(e){
-
-  // 🔥 YAHI ASAL FIX HAI
-  if(e){
-    e.stopPropagation();
-    e.preventDefault();
-  }
-
-  // 🔴 service box force close
-  const serviceBox = document.getElementById("serviceBox");
-  if(serviceBox){
-    serviceBox.style.display = "none";
-  }
+  e.preventDefault();
+  e.stopPropagation();
+  e.stopImmediatePropagation(); // 🔥 MOST IMPORTANT
 
   document.getElementById("notificationBox").style.display = "block";
+  return false;
   markAllNotificationsRead();
 
   return false; // ⭐⭐⭐ BOHOT IMPORTANT
@@ -3188,6 +3208,50 @@ function openService(e){
 
   // ✅ box pehle show karo (DOM ready ho jayega)
   box.style.display = "flex";
+  // ✅ IMAGE PICK + PREVIEW (SIMPLE FIX)
+const imgInput = document.getElementById("imgInput");
+const preview  = document.getElementById("imagePreview");
+
+imgInput.onchange = function () {
+
+  const file = this.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = function () {
+    preview.style.display = "block";
+    preview.innerHTML = `
+      <div style="position:relative;display:inline-block">
+        <img src="${reader.result}"
+          style="max-width:120px;border-radius:8px;border:1px solid #ddd">
+
+        <button id="removeImg"
+          style="
+            position:absolute;
+            top:-6px;
+            right:-6px;
+            background:#ff3b3b;
+            color:#fff;
+            border:none;
+            border-radius:50%;
+            width:20px;
+            height:20px;
+            cursor:pointer;
+          ">×</button>
+      </div>
+    `;
+
+    document.getElementById("removeImg").onclick = function () {
+      imgInput.value = "";
+      preview.innerHTML = "";
+      preview.style.display = "none";
+    };
+  };
+
+  reader.readAsDataURL(file);
+};
+
 
   // ✅ ab elements safe milenge
   const noticeBox = document.getElementById("serviceNotice");
@@ -3323,27 +3387,30 @@ async function sendServiceMsg(){
   }
 
   await db
-    .collection("supportTickets")
-    .doc(currentTicketId)
-    .collection("messages")
-    .add({
-      sender: "user",
-      text: text || "",
-      image: imageUrl || "",
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
+  .collection("supportTickets")
+  .doc(currentTicketId)
+  .collection("messages")
+  .add({
+    sender: "user",
+    text: text || "",
+    image: imageUrl || "",
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
 
-  await db
-    .collection("supportTickets")
-    .doc(currentTicketId)
-    .update({
-      lastSender: "user",
-      lastMessage: imageUrl ? "📷 Image" : text,
-      lastTime: firebase.firestore.FieldValue.serverTimestamp()
-    });
+await db
+  .collection("supportTickets")
+  .doc(currentTicketId)
+  .update({
+    lastSender: "user",
+    lastMessage: imageUrl ? "📷 Image" : text,
+    lastTime: firebase.firestore.FieldValue.serverTimestamp()
+  });
 
-  document.getElementById("msgInput").value = "";
-  document.getElementById("imgInput").value = "";
+// ✅ CLEAR INPUTS AFTER SEND
+document.getElementById("msgInput").value = "";
+document.getElementById("imgInput").value = "";
+document.getElementById("imagePreview").innerHTML = "";
+document.getElementById("imagePreview").style.display = "none";
 }
 
 </script>
@@ -3415,6 +3482,7 @@ async function sendServiceMsg(){
 
   <!-- Hidden Image Input -->
   <input type="file" id="imgInput" accept="image/*" hidden>
+  <div id="imagePreview" style="margin:6px 0;display:none"></div>
 
   <!-- ✍️ Text Input -->
   <input
