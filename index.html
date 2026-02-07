@@ -813,7 +813,8 @@ onchange="preview(this,'idBackPrev')">
 
   <small id="headerLang">🌍 EN</small>
 
-  <div id="notifyBtn" onclick="openNotifications()" style="position:relative;cursor:pointer">
+  <div id="notifyBtn" onclick="openNotifications(event)"
+ style="position:relative;cursor:pointer">
     <i class="fa-solid fa-bell" style="font-size:18px;color:#333"></i>
     <span id="notifyCount" style="
       display:none;
@@ -2811,9 +2812,24 @@ function submitWithdraw(){
 })
 .catch(err=>alert(err.message));
 }
-function openNotifications(){
+function openNotifications(e){
+
+  // 🔥 YAHI ASAL FIX HAI
+  if(e){
+    e.stopPropagation();
+    e.preventDefault();
+  }
+
+  // 🔴 service box force close
+  const serviceBox = document.getElementById("serviceBox");
+  if(serviceBox){
+    serviceBox.style.display = "none";
+  }
+
   document.getElementById("notificationBox").style.display = "block";
-  markAllNotificationsRead();   // 🔥 bell open hote hi sab read
+  markAllNotificationsRead();
+
+  return false; // ⭐⭐⭐ BOHOT IMPORTANT
 }
 
 function closeNotifications(){
@@ -3454,7 +3470,7 @@ position:fixed;
 top:0;left:0;
 width:100%;height:100%;
 background:rgba(0,0,0,.4);
-z-index:10001;
+z-index:20000;
 ">
 
   <div style="
@@ -3489,7 +3505,6 @@ z-index:10001;
 </body>
 
 </html>
-
 
 
 
